@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Git 101 ★ HackDécouverte 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sedgwick+Ave+Display&family=Rubik:wght@400;500;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme: light;
+  --page:#2b1810;
+  --ink:#000000;
+  --paper:#ffffff;
+  --text:#121212;
+  --fr:#17607a;
+  --frOnDark:#9fdcf0;
+  --onDark:#ffffff;
+  --orange:#f08a3c;
+  --pink:#ec6ac1;
+  --yellow:#f6dd6e;
+  --blue:#3e9cbf;
+  --ring:#ff3fae;
+  --tape:rgba(226,220,204,.82);
+  --g:'Sedgwick Ave Display','Impact','Arial Black',sans-serif;
+  --b:'Rubik','Segoe UI',system-ui,sans-serif;
+  --m:'JetBrains Mono','Consolas',ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root{ color-scheme: dark; --page:#0f0806; --tape:rgba(214,207,190,.8); }
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--page);overflow:hidden;font-family:var(--b);color:var(--text)}
+#stage{position:absolute;left:50%;top:50%;width:1600px;height:900px;transform-origin:center;overflow:hidden;background:#5e3324}
+#wall{position:absolute;inset:0}
+#wall::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 45%,rgba(0,0,0,0) 40%,rgba(18,6,2,.55) 100%),rgba(25,10,5,.18)}
+.slide{position:absolute;inset:0;padding:44px 56px;opacity:0;visibility:hidden;transition:opacity .35s ease,visibility .35s}
+.slide.on{opacity:1;visibility:visible}
+.slide > *{position:relative;z-index:2}
+.splat{position:absolute !important;z-index:1 !important;pointer-events:none}
+.splat svg{width:100%;height:100%;display:block}
+
+/* ---------- headings ---------- */
+.hd{display:flex;align-items:center;gap:30px}
+.chip{flex:none;width:104px;height:104px;background:var(--ink);border:6px solid var(--pink);display:grid;place-items:center;font-family:var(--g);font-size:56px;color:var(--yellow);transform:rotate(-3deg);box-shadow:5px 6px 0 rgba(0,0,0,.4)}
+.chip.c-blue{border-color:var(--blue);transform:rotate(2deg)}
+.chip.c-yellow{border-color:var(--yellow);color:var(--orange)}
+.chip.c-orange{border-color:var(--orange);transform:rotate(-1.5deg)}
+.gt{margin:0;font-family:var(--g);font-weight:400;font-size:80px;line-height:.95;color:var(--orange);-webkit-text-stroke:7px var(--ink);paint-order:stroke fill;text-shadow:6px 6px 0 var(--ink);letter-spacing:1px}
+.strip{display:inline-block;margin-top:12px;background:var(--paper);padding:6px 30px 8px 26px;font-family:var(--g);font-size:34px;line-height:1.1;color:var(--yellow);-webkit-text-stroke:6px var(--ink);paint-order:stroke fill;clip-path:polygon(0 8%,4% 0,100% 6%,98% 50%,100% 100%,3% 92%,1% 55%);transform:rotate(-1deg)}
+
+/* ---------- layout ---------- */
+.cols{display:flex;gap:40px;margin-top:30px;align-items:flex-start}
+.paper{flex:none;width:560px;background:var(--paper);padding:26px 30px 22px;transform:rotate(-.6deg);box-shadow:7px 9px 0 rgba(0,0,0,.38)}
+.tape{position:absolute;width:118px;height:34px;background:var(--tape);box-shadow:0 1px 2px rgba(0,0,0,.2);z-index:5}
+.tape.tl{left:-34px;top:-12px;transform:rotate(-32deg)}
+.tape.tr{right:-34px;top:-12px;transform:rotate(30deg)}
+.tape.br{right:-30px;bottom:-12px;transform:rotate(-30deg)}
+.tape.bl{left:-30px;bottom:-10px;transform:rotate(28deg)}
+.en{display:block;font-weight:500;font-size:23px;line-height:1.28;color:var(--text)}
+.fr{display:block;font-weight:400;font-size:19.5px;line-height:1.3;color:var(--fr);margin-top:3px}
+.bi{margin:0 0 16px}
+.bi.lead .en{font-weight:700;font-size:25px}
+.steps{list-style:none;margin:0;padding:0}
+.steps li{display:grid;grid-template-columns:42px 1fr;gap:16px;margin-bottom:15px;align-items:start}
+.steps li:last-child{margin-bottom:0}
+.n{width:40px;height:40px;background:var(--ink);color:var(--yellow);font-family:var(--g);font-size:25px;display:grid;place-items:center;border:3px solid var(--blue);margin-top:2px}
+.steps li:nth-child(2n) .n{border-color:var(--pink)}
+kbd{font-family:var(--m);font-size:.78em;font-weight:600;background:#f2f2f2;border:2px solid var(--ink);border-bottom-width:4px;border-radius:5px;padding:0 6px;white-space:nowrap;color:var(--text)}
+code{font-family:var(--m);font-size:.84em;background:#fdf0bd;padding:1px 6px;border-radius:3px;color:var(--text);white-space:nowrap}
+.tip{position:relative;margin-top:24px;width:560px;background:var(--yellow);padding:16px 24px;transform:rotate(1deg);box-shadow:6px 8px 0 rgba(0,0,0,.35)}
+.tip .en{font-size:21px;font-weight:700}
+.tip .fr{font-size:18.5px;color:#4a3a00}
+.tip + .tip{margin-top:20px;transform:rotate(-1deg)}
+
+/* ---------- screenshot frame ---------- */
+.shot{position:relative;flex:none;width:860px;height:520px;transform:rotate(.7deg)}
+.shot.flat{transform:none}
+
+/* ---------- rings (spray circles) ---------- */
+.ring{position:absolute;pointer-events:none;z-index:20}
+.ring svg{position:absolute;inset:-6px;width:calc(100% + 12px);height:calc(100% + 12px);overflow:visible}
+.ring path{fill:none;stroke:var(--ring);stroke-width:4.5;stroke-linecap:round;filter:drop-shadow(0 0 3px rgba(255,63,174,.75));stroke-dasharray:100;stroke-dashoffset:0}
+.on .ring path{animation:draw .7s ease-out both;animation-delay:calc(var(--i,0) * .25s + .25s)}
+@keyframes draw{from{stroke-dashoffset:100}to{stroke-dashoffset:0}}
+.rn{position:absolute;left:-22px;top:calc(50% - 16px);width:32px;height:32px;border-radius:50%;background:var(--yellow);border:3px solid var(--ink);display:grid;place-items:center;font:800 16px var(--b);color:var(--ink)}
+@media (prefers-reduced-motion: reduce){.on .ring path{animation:none}.slide{transition:none}.marq span{animation:none !important}}
+
+/* ---------- VS Code mock ---------- */
+.vsc{position:absolute;inset:0;background:#1e1e1e;border-radius:10px;overflow:hidden;font-family:"Segoe UI",system-ui,-apple-system,sans-serif;font-size:13px;color:#cccccc;box-shadow:0 22px 44px rgba(0,0,0,.55);border:1px solid #111}
+.d{display:inline-block;width:12px;height:12px;border-radius:50%}
+.d.r{background:#ff5f57}.d.y{background:#febc2e}.d.g{background:#28c840}
+.vsc .tb{height:32px;background:#323233;display:flex;align-items:center;gap:8px;padding:0 12px;position:relative}
+.vsc .tt{position:absolute;left:0;right:0;text-align:center;font-size:12px;color:#bbb;pointer-events:none}
+.vsc .mn{display:flex;height:464px}
+.ab{width:48px;background:#333333;flex:none;padding-top:6px}
+.abi{position:relative;height:44px;display:grid;place-items:center;color:#858585;border-left:2px solid transparent}
+.abi.on{color:#fff;border-left-color:#fff}
+.abi svg,.ic svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.bdg{position:absolute;right:6px;bottom:6px;background:#0078d4;color:#fff;font-size:10px;font-weight:700;border-radius:8px;min-width:16px;height:16px;display:grid;place-items:center;padding:0 4px}
+.sb{width:240px;background:#252526;flex:none;position:relative}
+.sbh{height:35px;display:flex;align-items:center;padding:0 10px 0 18px;font-size:11px;letter-spacing:.4px;color:#bbbbbb;gap:6px}
+.sbh .sp{flex:1}
+.ic{display:inline-grid;place-items:center;width:22px;height:22px;color:#c5c5c5;border-radius:4px}
+.ic svg{width:16px;height:16px}
+.dots svg circle{fill:currentColor;stroke:none}
+.sec{font-size:11px;font-weight:700;padding:3px 10px;color:#ccc}
+.fi{display:flex;align-items:center;gap:7px;padding:3px 10px 3px 24px;font-size:13px}
+.fi.on{background:#37373d;outline:1px solid #007fd4;outline-offset:-1px}
+.fi b{font-size:10px;font-weight:700;width:16px;text-align:center}
+.fh{color:#e37933}.fc{color:#519aba}.fj{color:#cbcb41}.fm{color:#519aba}
+.fi .sp{flex:1}
+.fi .st{font-weight:700;font-size:12px}
+.st-m{color:#e2c08d}.st-u{color:#73c991}
+.fi .ic svg{width:15px;height:15px}
+.ed{flex:1;display:flex;flex-direction:column;min-width:0;background:#1e1e1e}
+.tabs{height:35px;background:#252526;display:flex;flex:none}
+.tab{display:flex;align-items:center;gap:6px;padding:0 14px;color:#8a8a8a;border-right:1px solid #1e1e1e;font-size:13px}
+.tab.on{background:#1e1e1e;color:#fff;border-top:1px solid #0078d4}
+.tab i{font-style:normal;color:#aaa;margin-left:6px}
+.code{flex:1;font-family:var(--m);font-size:13px;line-height:21px;padding-top:6px;overflow:hidden;white-space:pre}
+.ln{display:flex}
+.ln u{text-decoration:none;width:44px;text-align:right;padding-right:18px;color:#6e7681;flex:none}
+.ln.add{background:rgba(46,160,67,.18)}
+.k1{color:#569cd6}.k2{color:#9cdcfe}.k3{color:#ce9178}.k4{color:#d4d4d4}.k5{color:#808080}
+.pnl{flex:none;border-top:1px solid #3c3c3c;background:#1e1e1e;display:flex;flex-direction:column}
+.pt{height:32px;display:flex;align-items:center;gap:20px;padding:0 16px;font-size:11px;color:#8a8a8a;flex:none}
+.pt .on{color:#e7e7e7;border-bottom:1px solid #e7e7e7;padding-bottom:4px}
+.term{font-family:var(--m);font-size:15px;line-height:30px;padding:2px 16px;color:#cccccc;white-space:pre}
+.pr{color:#3fb950}
+.term [data-ring]{display:inline-block;vertical-align:top}
+.cur{display:inline-block;width:8px;height:16px;background:#ccc;vertical-align:-3px}
+.stb{height:24px;background:#007acc;color:#fff;display:flex;align-items:center;font-size:12px;padding:0 8px;gap:4px}
+.stb > span{display:flex;align-items:center;gap:4px;padding:0 6px;height:100%}
+.stb svg{width:14px;height:14px;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.stb .sp{flex:1}
+.cmt{margin:4px 12px 0}
+.cmt .in{background:#3c3c3c;border:1px solid #0078d4;border-radius:2px;padding:6px 8px;color:#ccc;font-size:13px;min-height:30px}
+.cmt .in.ph{color:#8b8b8b;border-color:#3c3c3c}
+.vbtn{margin-top:8px;background:#0078d4;color:#fff;border-radius:2px;height:28px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px}
+.vbtn svg{width:15px;height:15px;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.chg{margin-top:12px}
+.qp{position:absolute;left:calc(50% - 280px);top:40px;width:560px;background:#252526;border:1px solid #454545;border-radius:7px;box-shadow:0 10px 30px rgba(0,0,0,.6);padding:6px;z-index:10}
+.qp .qi{background:#3c3c3c;border:1px solid #0078d4;border-radius:3px;padding:6px 8px;color:#ddd;font-size:13px}
+.qp .qh{font-size:12px;color:#9d9d9d;padding:6px 8px 4px}
+.qp .qo{padding:5px 8px;border-radius:3px;display:flex;gap:8px;color:#ccc}
+.qp .qo.hl{background:#04395e;color:#fff;outline:1px solid #0078d4}
+.qp .qo small{color:#8b8b8b;margin-left:auto}
+.qp .qs{font-size:11px;color:#8b8b8b;text-align:right;padding:4px 8px;border-top:1px solid #3c3c3c;margin-top:4px}
+.mnu{position:absolute;background:#252526;border:1px solid #454545;border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,.6);padding:4px;width:200px;z-index:12;font-size:13px}
+.mi{padding:4px 12px;border-radius:4px;display:flex;color:#ccc;line-height:17px}
+.mi.hl{background:#04395e;color:#fff}
+.mi .ar{margin-left:auto;color:#999}
+.msep{height:1px;background:#454545;margin:4px 6px}
+.dlg{position:absolute;left:calc(50% - 210px);top:150px;width:420px;background:#252526;border:1px solid #454545;border-radius:8px;box-shadow:0 14px 40px rgba(0,0,0,.7);padding:18px 20px;z-index:12;color:#ddd;font-size:14px;line-height:1.4}
+.dlg .row{display:flex;gap:10px;justify-content:flex-end;margin-top:16px}
+.dlg .bt1{background:#0078d4;color:#fff;padding:5px 16px;border-radius:3px}
+.dlg .bt2{background:#3a3d41;color:#fff;padding:5px 16px;border-radius:3px}
+
+/* ---------- browser + GitHub-style page mock ---------- */
+.brw{position:absolute;inset:0;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 22px 44px rgba(0,0,0,.55);font-family:-apple-system,"Segoe UI",system-ui,sans-serif;color:#1f2328;font-size:14px}
+.bt{height:36px;background:#dfe3e8;display:flex;align-items:center;gap:8px;padding:0 12px}
+.btab{margin-left:16px;align-self:flex-end;background:#fff;height:28px;border-radius:8px 8px 0 0;padding:0 16px;display:flex;align-items:center;font-size:12px;color:#333;width:220px}
+.ba{height:40px;display:flex;align-items:center;gap:12px;padding:0 12px;border-bottom:1px solid #e3e3e3}
+.ba .nv{color:#777;font-size:16px;letter-spacing:8px}
+.url{flex:1;background:#f1f3f4;border-radius:16px;padding:6px 14px;font-size:13px;color:#333}
+.bc{position:absolute;top:76px;left:0;right:0;bottom:0;overflow:hidden}
+.ghh{height:54px;background:#f6f8fa;border-bottom:1px solid #d1d9e0;display:flex;align-items:center;gap:12px;padding:0 16px}
+.ghh .sp{flex:1}
+.hb{width:30px;height:30px;border:1px solid #d1d9e0;border-radius:6px;display:grid;place-items:center;color:#59636e;font-size:14px;background:#fff}
+.ghp{font-weight:600}
+.ghp b{font-weight:400;color:#59636e}
+.srch{border:1px solid #d1d9e0;border-radius:6px;padding:5px 10px;color:#59636e;font-size:13px;width:200px;background:#fff}
+.av{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--pink),var(--orange))}
+.ghtabs{display:flex;gap:4px;padding:0 16px;border-bottom:1px solid #d1d9e0;background:#f6f8fa;height:42px;align-items:flex-end}
+.ghtabs span{padding:8px 12px;font-size:14px;color:#1f2328;border-bottom:2px solid transparent}
+.ghtabs span.on{border-bottom-color:#fd8c73;font-weight:600}
+.ghtabs .cnt{background:#e7ecf0;border-radius:10px;padding:0 6px;font-size:12px;margin-left:4px}
+.gb{display:inline-flex;align-items:center;gap:6px;background:#1f883d;color:#fff;border-radius:6px;padding:6px 14px;font-weight:600;font-size:14px;border:1px solid rgba(31,35,40,.15)}
+.gb.gray{background:#f6f8fa;color:#1f2328;border-color:#d1d9e0}
+.gin{border:1px solid #d1d9e0;border-radius:6px;padding:6px 10px;background:#fff;font-size:14px;color:#1f2328}
+.lbl{font-weight:600;font-size:14px;margin-bottom:6px;display:block}
+.muted{color:#59636e;font-size:13px}
+.pg{padding:20px 40px}
+.pg h3{margin:0 0 4px;font-size:22px;font-weight:600}
+.hr{height:1px;background:#d1d9e0;margin:14px 0}
+.rad{display:flex;gap:10px;align-items:flex-start;margin-bottom:8px}
+.rad i{width:16px;height:16px;border-radius:50%;border:1px solid #8c959f;flex:none;margin-top:2px}
+.rad i.on{border:5px solid #0969da}
+.tog{display:inline-block;width:36px;height:20px;border-radius:10px;background:#0969da;position:relative;vertical-align:middle}
+.tog::after{content:"";position:absolute;right:3px;top:3px;width:14px;height:14px;border-radius:50%;background:#fff}
+.ban{background:#fff8c5;border:1px solid rgba(212,167,44,.4);border-radius:6px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between}
+.ddp{position:absolute;background:#fff;border:1px solid #d1d9e0;border-radius:12px;box-shadow:0 8px 24px rgba(140,149,159,.35);z-index:10}
+.mbox{border:1px solid #d1d9e0;border-radius:6px;display:flex;align-items:center;gap:14px;padding:14px 16px}
+.okc{width:34px;height:34px;border-radius:50%;background:#1f883d;display:grid;place-items:center;color:#fff;font-weight:700;flex:none}
+
+/* ---------- floating polaroid card ---------- */
+.float{position:absolute;z-index:15;background:#fff;padding:12px;box-shadow:8px 10px 0 rgba(0,0,0,.38);transform:rotate(-2deg)}
+.float .cap{font-family:var(--g);font-size:20px;color:var(--ink);margin:8px 2px 0}
+
+/* ---------- agenda ---------- */
+.agenda{display:grid;grid-template-columns:repeat(4,1fr);gap:22px 24px;margin-top:34px}
+.ag{background:var(--ink);border:5px solid var(--pink);padding:14px 18px 16px;min-height:146px;box-shadow:6px 7px 0 rgba(0,0,0,.4)}
+.ag:nth-child(4n+2){border-color:var(--blue);transform:rotate(1deg)}
+.ag:nth-child(4n+3){border-color:var(--yellow);transform:rotate(-.8deg)}
+.ag:nth-child(4n+4){border-color:var(--orange);transform:rotate(.6deg)}
+.ag:nth-child(4n+1){transform:rotate(-1deg)}
+.ag .no{font-family:var(--g);font-size:40px;line-height:1;color:var(--yellow)}
+.ag .en{color:var(--onDark);font-weight:700;font-size:23px;margin-top:8px}
+.ag .fr{color:var(--frOnDark);font-size:19px}
+.hd .sp{flex:1}
+.stick{background:var(--yellow);padding:14px 22px;transform:rotate(2deg);box-shadow:6px 8px 0 rgba(0,0,0,.35);position:relative}
+.stick .en{font-weight:800;font-size:22px}
+.stick .fr{color:#4a3a00;font-size:18px}
+
+/* ---------- title slide ---------- */
+.ttl{display:flex;flex-direction:column;align-items:center;padding-top:70px}
+.mega{margin:0;font-family:var(--g);font-weight:400;font-size:250px;line-height:.9;color:var(--orange);-webkit-text-stroke:12px var(--ink);paint-order:stroke fill;text-shadow:10px 10px 0 var(--ink);letter-spacing:4px}
+.bigstrip{margin-top:26px;background:var(--paper);display:flex;gap:90px;padding:10px 60px 12px;font-family:var(--g);font-size:40px;color:var(--yellow);-webkit-text-stroke:6px var(--ink);paint-order:stroke fill;clip-path:polygon(0 10%,3% 0,100% 8%,97% 50%,100% 100%,2% 90%,1% 50%);transform:rotate(-1deg)}
+.tools{display:flex;gap:30px;margin-top:34px}
+.tool{width:200px;height:132px;background:var(--ink);border:6px solid var(--pink);display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:5px 6px 0 rgba(0,0,0,.45);transform:rotate(-2deg)}
+.tool:nth-child(2){border-color:var(--blue);transform:rotate(1.5deg)}
+.tool:nth-child(3){border-color:var(--orange);transform:rotate(-1deg)}
+.tool b{font-family:var(--g);font-weight:400;font-size:44px;color:var(--yellow);line-height:1.05}
+.tool span{font-weight:800;font-size:14px;color:#fff;margin-top:4px}
+.tool span i{font-style:normal;font-weight:500;color:var(--frOnDark)}
+.go{margin-top:34px;background:var(--yellow);padding:14px 34px;transform:rotate(-2deg);box-shadow:6px 8px 0 rgba(0,0,0,.35);position:relative;text-align:center}
+.go .en{font-weight:900;font-size:26px}
+.go .fr{font-size:19px;color:#4a3a00}
+.marq{position:absolute !important;left:-40px;right:-40px;bottom:-6px;height:56px;background:var(--yellow);border-top:5px solid var(--ink);transform:rotate(-1.6deg);overflow:hidden;display:flex;align-items:center;white-space:nowrap}
+.marq span{font-family:var(--g);font-size:30px;color:var(--ink);animation:mq 40s linear infinite;padding-left:20px}
+@keyframes mq{to{transform:translateX(-50%)}}
+
+/* ---------- GitHub concept diagram ---------- */
+.diag{position:relative;width:860px;height:520px}
+.node{position:absolute;background:var(--ink);border:6px solid var(--blue);padding:16px 18px;text-align:center;box-shadow:6px 7px 0 rgba(0,0,0,.4);color:#fff}
+.node svg{width:74px;height:74px;fill:none;stroke:var(--yellow);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.node b{display:block;font-family:var(--g);font-weight:400;font-size:36px;color:var(--yellow);line-height:1.1}
+.node .en{color:#fff;font-size:18px;font-weight:600}
+.node .fr{color:var(--frOnDark);font-size:16px}
+.arr{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.arr path{fill:none;stroke-width:6;stroke-linecap:round}
+.alab{position:absolute;background:var(--paper);padding:4px 14px;font-family:var(--m);font-weight:600;font-size:20px;color:var(--ink);box-shadow:4px 4px 0 rgba(0,0,0,.35)}
+
+/* ---------- cheat sheet ---------- */
+.cheat{width:1000px;padding:20px 30px}
+.cr{display:grid;grid-template-columns:400px 1fr;gap:20px;align-items:center;padding:9px 0;border-bottom:2px dashed #d8d8d8}
+.cr:last-child{border-bottom:0}
+.cr code{font-size:19px;background:var(--ink);color:var(--yellow);padding:6px 12px;border-radius:0}
+.cr .en{font-size:21px}
+.cr .fr{font-size:18px;margin-top:1px}
+
+/* ---------- demo + end ---------- */
+.flow{display:flex;gap:18px;margin-top:44px;align-items:center;justify-content:center}
+.fl{width:168px;height:150px;background:var(--ink);border:5px solid var(--pink);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:8px;box-shadow:5px 6px 0 rgba(0,0,0,.4)}
+.fl:nth-child(4n+3){border-color:var(--blue);transform:rotate(1.5deg)}
+.fl:nth-child(4n+1){transform:rotate(-1.5deg)}
+.fl:nth-child(4n+5){border-color:var(--orange)}
+.fl:nth-child(4n+7){border-color:var(--yellow);transform:rotate(1deg)}
+.fl b{font-family:var(--g);font-weight:400;font-size:30px;color:var(--yellow);line-height:1.05}
+.fl i{font-style:normal;color:var(--frOnDark);font-size:15px;margin-top:8px;line-height:1.2}
+.fa{color:var(--paper);font-size:30px;font-weight:900;text-shadow:3px 3px 0 #000}
+.links{display:flex;gap:18px;margin-top:36px;justify-content:center}
+.lk{background:var(--ink);border:5px solid var(--blue);padding:14px 18px;color:#fff;min-width:250px;box-shadow:5px 6px 0 rgba(0,0,0,.4)}
+.lk{display:block;text-decoration:none;min-width:0}
+.lk:hover,.lk:focus-visible{outline:4px solid var(--yellow);outline-offset:3px}
+.lk:nth-child(5){border-color:var(--pink);transform:rotate(1deg)}
+.cl{text-decoration:none}
+.cl code{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px}
+.cl:hover code,.cl:focus-visible code{background:var(--yellow)}
+.lk:nth-child(2){border-color:var(--pink)}.lk:nth-child(3){border-color:var(--orange)}.lk:nth-child(4){border-color:var(--yellow)}
+.lk .u{font-family:var(--m);font-weight:600;font-size:18px;color:var(--yellow)}
+.lk .en{color:#fff;font-size:18px;margin-top:6px}
+.lk .fr{color:var(--frOnDark);font-size:16px}
+
+/* ---------- controls ---------- */
+#ui{position:absolute;right:26px;bottom:22px;display:flex;gap:10px;z-index:50}
+#ui button,#ui .ct{height:52px;min-width:52px;background:var(--ink);color:#fff;border:4px solid var(--paper);font:800 20px var(--b);display:grid;place-items:center;cursor:pointer;box-shadow:4px 5px 0 rgba(0,0,0,.4)}
+#ui .ct{padding:0 14px;cursor:default;font-size:17px}
+#ui button:hover{background:#222}
+#ui button:focus-visible{outline:4px solid var(--yellow);outline-offset:2px}
+#bar{position:absolute;left:0;bottom:0;height:7px;background:var(--pink);z-index:49;transition:width .35s ease;box-shadow:0 0 10px var(--pink)}
+.brand{position:absolute;left:30px;bottom:26px;z-index:50;font-family:var(--g);font-size:22px;color:#fff;text-shadow:2px 2px 0 #000;opacity:.85}
+.hint{position:absolute;bottom:90px;left:0;right:0;text-align:center;color:#fff;font-size:15px;opacity:.75;text-shadow:1px 1px 0 #000}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="wall"></div>
+
+  <!-- 1. TITLE -->
+  <section class="slide" data-splat="pink:250,250,330:3;yellow:560,170,260:9;blue:950,210,320:4;pink:1180,150,260:12;yellow:-70,640,300:6">
+    <div class="ttl">
+      <h1 class="mega">GIT 101</h1>
+      <div class="bigstrip"><span>HackDécouverte 2026</span><span>Concordia University</span></div>
+      <div class="tools">
+        <div class="tool"><b>VS Code</b><span>Editor <i>Éditeur</i></span></div>
+        <div class="tool"><b>Git</b><span>Tool <i>Outil</i></span></div>
+        <div class="tool"><b>GitHub</b><span>Cloud <i>Nuage</i></span></div>
+      </div>
+      <div class="go"><span class="tape tl"></span><span class="tape br"></span>
+        <span class="en">Git, GitHub and VS Code for beginners.</span>
+        <span class="fr">Git, GitHub et VS Code pour débutants.</span>
+      </div>
+    </div>
+    <div class="marq"><span>BILINGUAL ★ BEGINNER-FRIENDLY ★ GIT 101 ★ BILINGUE ★ POUR DÉBUTANTS ★ GIT 101 ★ BILINGUAL ★ BEGINNER-FRIENDLY ★ GIT 101 ★ BILINGUE ★ POUR DÉBUTANTS ★ GIT 101 ★ BILINGUAL ★ BEGINNER-FRIENDLY ★ GIT 101 ★ BILINGUE ★ POUR DÉBUTANTS ★ GIT 101 ★ BILINGUAL ★ BEGINNER-FRIENDLY ★ GIT 101 ★ BILINGUE ★ POUR DÉBUTANTS ★ GIT 101 ★&nbsp;</span></div>
+  </section>
+
+  <!-- 2. AGENDA -->
+  <section class="slide" data-splat="blue:1420,-60,260:21">
+    <header class="hd">
+      <div><h2 class="gt">Today's plan</h2><div class="strip">Le plan du jour</div></div>
+      <div class="sp"></div>
+      <div class="stick"><span class="tape tl"></span><span class="en">Live demo at the end.</span><span class="fr">Démo en direct à la fin.</span></div>
+    </header>
+    <div class="agenda">
+      <div class="ag"><div class="no">01</div><span class="en">What is VS Code</span><span class="fr">C'est quoi VS Code</span></div>
+      <div class="ag"><div class="no">02</div><span class="en">Install VS Code</span><span class="fr">Installer VS Code</span></div>
+      <div class="ag"><div class="no">03</div><span class="en">Install Git</span><span class="fr">Installer Git</span></div>
+      <div class="ag"><div class="no">04</div><span class="en">What is GitHub</span><span class="fr">C'est quoi GitHub</span></div>
+      <div class="ag"><div class="no">05</div><span class="en">Create an account</span><span class="fr">Créer un compte</span></div>
+      <div class="ag"><div class="no">06</div><span class="en">Create a repository</span><span class="fr">Créer un dépôt</span></div>
+      <div class="ag"><div class="no">07</div><span class="en">Clone a repo</span><span class="fr">Cloner un dépôt</span></div>
+      <div class="ag"><div class="no">08</div><span class="en">Create a branch</span><span class="fr">Créer une branche</span></div>
+      <div class="ag"><div class="no">09</div><span class="en">Commit and push</span><span class="fr">Faire un commit et un push</span></div>
+      <div class="ag"><div class="no">10</div><span class="en">Pull requests</span><span class="fr">Les pull requests</span></div>
+      <div class="ag"><div class="no">11</div><span class="en">Pull the latest changes</span><span class="fr">Récupérer les changements</span></div>
+      <div class="ag"><div class="no">12</div><span class="en">Stash your work</span><span class="fr">Mettre ton travail de côté</span></div>
+    </div>
+  </section>
+
+  <!-- 3. WHAT IS VS CODE -->
+  <section class="slide" data-splat="pink:-90,620,280:31">
+    <header class="hd"><div class="chip">01</div><div><h2 class="gt">What is VS Code</h2><div class="strip">C'est quoi VS Code ?</div></div></header>
+    <div class="cols">
+      <div class="paper"><span class="tape tl"></span>
+        <p class="bi lead"><span class="en">VS Code is a free code editor.</span><span class="fr">VS Code est un éditeur de code gratuit.</span></p>
+        <p class="bi"><span class="en">It works on Windows, Mac and Linux.</span><span class="fr">Il fonctionne sur Windows, Mac et Linux.</span></p>
+        <ol class="steps">
+          <li><b class="n">1</b><div><span class="en">Explorer: your files.</span><span class="fr">Explorateur : tes fichiers.</span></div></li>
+          <li><b class="n">2</b><div><span class="en">Editor: where you write code.</span><span class="fr">Éditeur : là où tu écris ton code.</span></div></li>
+          <li><b class="n">3</b><div><span class="en">Terminal: where you type commands.</span><span class="fr">Terminal : là où tu tapes des commandes.</span></div></li>
+          <li><b class="n">4</b><div><span class="en">Source Control: Git, built in.</span><span class="fr">Contrôle de code source : Git, intégré.</span></div></li>
+        </ol>
+      </div>
+      <div class="shot" data-mock="what"><span class="tape tr"></span></div>
+    </div>
+  </section>
+
+  <!-- 4. INSTALL VS CODE -->
+  <section class="slide" data-splat="yellow:1450,-70,240:41">
+    <header class="hd"><div class="chip c-blue">02</div><div><h2 class="gt">Install VS Code</h2><div class="strip">Installer VS Code</div></div></header>
+    <div class="cols">
+      <div class="paper"><span class="tape tl"></span>
+        <ol class="steps">
+          <li><b class="n">1</b><div><span class="en">Go to <a class="cl" href="https://code.visualstudio.com/download" target="_blank" rel="noopener"><code>code.visualstudio.com</code></a></span><span class="fr">Va sur <a class="cl" href="https://code.visualstudio.com/download" target="_blank" rel="noopener"><code>code.visualstudio.com</code></a></span></div></li>
+          <li><b class="n">2</b><div><span class="en">Click the download button for your system.</span><span class="fr">Clique sur le bouton de téléchargement pour ton système.</span></div></li>
+          <li><b class="n">3</b><div><span class="en">Windows: run the installer. Keep "Add to PATH" checked.</span><span class="fr">Windows : lance l'installateur. Garde « Add to PATH » coché.</span></div></li>
+          <li><b class="n">4</b><div><span class="en">Mac: unzip it and drag the app to Applications.</span><span class="fr">Mac : décompresse et glisse l'app dans Applications.</span></div></li>
+          <li><b class="n">5</b><div><span class="en">Open VS Code. You are ready.</span><span class="fr">Ouvre VS Code. Tu es prêt.</span></div></li>
+        </ol>
+      </div>
+      <div class="shot" data-mock="install"><span class="tape tr"></span></div>
+    </div>
+  </section>
+
+  <!-- 5. INSTALL GIT -->
+  <section class="slide" data-splat="blue:-80,640,260:51">
+    <header class="hd"><div class="chip c-yellow">03</div><div><h2 class="gt">Install Git</h2><div class="strip">Installer Git</div></div></header>
+    <div class="cols">
+      <div class="paper"><span class="tape tl"></span>
+        <ol class="steps">
+          <li><b class="n">1</b><div><span class="en">Windows: download Git from <a class="cl" href="https://git-scm.com/downloads" target="_blank" rel="noopener"><code>git-scm.com</code></a></span><span class="fr">Windows : télécharge Git sur <a class="cl" href="https://git-scm.com/downloads" target="_blank" rel="noopener"><code>git-scm.com</code></a></span></div></li>
+          <li><b class="n">2</b><div><span class="en">Run it. Keep the default options.</span><span class="fr">Lance-le. Garde les options par défaut.</span></div></li>
+          <li><b class="n">3</b><div><span class="en">Mac: type <code>git --version</code> in the terminal. Click Install if asked.</span><span class="fr">Mac : tape <code>git --version</code> dans le terminal. Clique sur Installer si demandé.</span></div></li>
+          <li><b class="n">4</b><div><span class="en">Check it works in VS Code. Open the terminal with <kbd>Ctrl</kbd>+<kbd>&#96;</kbd></span><span class="fr">Vérifie dans VS Code. Ouvre le terminal avec ce raccourci.</span></div></li>
+          <li><b class="n">5</b><div><span class="en">Tell Git your name and email. Only once.</span><span class="fr">Donne ton nom et ton courriel à Git. Une seule fois.</span></div></li>
+        </ol>
+      </div>
+      <div class="shot" data-mock="git"><span class="tape tr"></span></div>
+    </div>
+  </section>
+
+  <!-- 6. WHAT IS GITHUB -->
+  <section class="slide" data-splat="pink:1430,640,280:61">
+    <header class="hd"><div class="chip c-orange">04</div><div><h2 class="gt">What is GitHub</h2><div class="strip">C'est quoi GitHub ?</div></div></header>
+    <div class="cols">
+      <div style="width:560px;flex:none">
+        <div class="paper"><span class="tape tl"></span>
+          <p class="bi lead"><span class="en">Git tracks every change in your project.</span><span class="fr">Git garde l'historique de chaque changement.</span></p>
+          <p class="bi lead"><span class="en">GitHub keeps your project online.</span><span class="fr">GitHub garde ton projet en ligne.</span></p>
+          <p class="bi lead" style="margin:0"><span class="en">Your whole team works on the same code.</span><span class="fr">Toute ton équipe travaille sur le même code.</span></p>
+        </div>
+        <div class="tip"><span class="tape tr"></span>
+          <span class="en">Think of a video game. Git saves your progress. GitHub is the cloud save.</span>
+          <span class="fr">Pense à un jeu vidéo. Git sauvegarde ta progression. GitHub, c'est la sauvegarde dans le cloud.</span>
+        </div>
+      </div>
+      <div class="shot flat" data-mock="diagram"></div>
+    </div>
+  </section>
+
+  <!-- 7. CREATE ACCOUNT -->
+  <section class="slide" data-splat="yellow:-60,-60,240:71">
+    <header class="hd"><div class="chip">05</div><div><h2 class="gt">Create a GitHub account</h2><div class="strip">Créer un compte GitHub</div></div></header>
+    <div class="cols">
+      <div style="width:560px;flex:none">
+        <div class="paper"><span class="tape tl"></span>
+          <ol class="steps">
+            <li><b class="n">1</b><div><span class="en">Go to <a class="cl" href="https://github.com/signup" target="_blank" rel="noopener"><code>github.com</code></a> and click Sign up.</span><span class="fr">Va sur <a class="cl" href="https://github.com/signup" target="_blank" rel="noopener"><code>github.com</code></a> et clique sur Sign up.</span></div></li>
+            <li><b class="n">2</b><div><span class="en">Enter your email, a password and a username.</span><span class="fr">Entre ton courriel, un mot de passe et un nom d'utilisateur.</span></div></li>
+            <li><b class="n">3</b><div><span class="en">Click Create account and solve the quick puzzle.</span><span class="fr">Clique sur Create account et résous le petit casse-tête.</span></div></li>
+            <li><b class="n">4</b><div><span class="en">Enter the code sent to your email.</span><span class="fr">Entre le code reçu par courriel.</span></div></li>
+          </ol>
+        </div>
+        <div class="tip"><span class="tape tr"></span>
+          <span class="en">Pick a clean username. It will be on your CV one day.</span>
+          <span class="fr">Choisis un nom d'utilisateur sérieux. Il sera sur ton CV un jour.</span>
+        </div>
+      </div>
+      <div class="shot" data-mock="signup"><span class="tape tr"></span></div>
+    </div>
+  </section>
+
+  <!-- 8. CREATE REPO -->
+  <section class="slide" data-splat="blue:1460,-60,230:81">
+    <header class="hd"><div class="chip c-blue">06</div><div><h2 class="gt">Create a repository</h2><div class="strip">Créer un dépôt</div></div></header>
+    <div class="cols">
+      <div class="paper"><span class="tape tl"></span>
+        <p class="bi lead"><span class="en">A repository (repo) is your project folder, with its full history.</span><span class="fr">Un dépôt (repo), c'est le dossier de ton projet, avec tout son historique.</span></p>
+        <ol class="steps">
+          <li><b class="n">1</b><div><span class="en">Click + at the top right, then New repository.</span><span class="fr">Clique sur + en haut à droite, puis New repository.</span></div></li>
+          <li><b class="n">2</b><div><span class="en">Give it a name.</span><span class="fr">Donne-lui un nom.</span></div></li>
+          <li><b class="n">3</b><div><span class="en">Choose Public or Private.</span><span class="fr">Choisis Public ou Private.</span></div></li>
+          <li><b class="n">4</b><div><span class="en">Turn on Add README.</span><span class="fr">Active Add README.</span></div></li>
+          <li><b class="n">5</b><div><span class="en">Click Create repository.</span><span class="fr">Clique sur Create repository.</span></div></li>
+        </ol>
+      </div>
+      <div class="shot" data-mock="repo"><span class="tape tr"></span></div>
+    </div>
+  </section>
+
+  <!-- 9. INVITE TEAM -->
+  <section class="slide" data-splat="pink:-80,660,250:91">
+    <header class="hd"><div class="chip c-blue">06</div><div><h2 class="gt">Invite your team</h2><div class="strip">Invite ton équipe</div></div></header>
+    <div class="cols">
+      <div style="width:560px;flex:none">
+        <div class="paper"><span class="tape tl"></span>
+          <ol class="steps">
+            <li><b class="n">1</b><div><span class="en">Open your repo, then click Settings.</span><span class="fr">Ouvre ton dépôt, puis clique sur Settings.</span></div></li>
+            <li><b class="n">2</b><div><span class="en">Click Collaborators.</span><span class="fr">Clique sur Collaborators.</span></div></li>
+            <li><b class="n">3</b><div><span class="en">Click Add people. Type their username.</span><span class="fr">Clique sur Add people. Tape leur nom d'utilisateur.</span></div></li>
+            <li><b class="n">4</b><div><span class="en">They accept the invite by email.</span><span class="fr">Ils acceptent l'invitation par courriel.</span></div></li>
+          </ol>
+        </div>
+        <div class="tip"><span class="tape tr"></span>
+          <span class="en">Only one person creates the repo. Everyone else clones it.</span>
+          <span class="fr">Une seule personne crée le dépôt. Les autres le clonent.</span>
+        </div>
+      </div>
+      <div class="shot" data-mock="invite"><span class="tape tr"></span></div>
+    </div>
+  </section>
+
+  <!-- 10. CLONE -->
+  <section class="slide" data-splat="yellow:1440,620,260:101">
+    <header class="hd"><div class="chip c-yellow">07</div><div><h2 class="gt">Clone a repo</h2><div class="strip">Cloner un dépôt</div></div></header>
+    <div class="cols">
+      <div class="paper"><span class="tape tl"></span>
+        <p class="bi lead"><span class="en">Cloning copies the repo from GitHub to your computer.</span><span class="fr">Cloner copie le dépôt de GitHub vers ton ordinateur.</span></p>
+        <ol class="steps">
+          <li><b class="n">1</b><div><span class="en">On GitHub, click Code and copy the URL.</span><span class="fr">Sur GitHub, clique sur Code et copie l'URL.</span></div></li>
+          <li><b class="n">2</b><div><span class="en">In VS Code, press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd>. Mac: <kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd></span><span class="fr">Dans VS Code, appuie sur ce raccourci.</span></div></li>
+          <li><b class="n">3</b><div><span class="en">Type Git: Clone. Paste the URL.</span><span class="fr">Tape Git: Clone. Colle l'URL.</span></div></li>
+          <li><b class="n">4</b><div><span class="en">Pick a folder, then click Open.</span><span class="fr">Choisis un dossier, puis clique sur Open.</span></div></li>
+        </ol>
+      </div>
+      <div class="shot" data-mock="clone"><span class="tape tr"></span></div>
+    </div>
+  </section>
+
+  <!-- 11. BRANCH -->
+  <section class="slide" data-splat="blue:-70,-60,240:111">
+    <header class="hd"><div class="chip c-orange">08</div><div><h2 class="gt">Create a branch</h2><div class="strip">Créer une branche</div></div></header>
+    <div class="cols">
+      <div style="width:560px;flex:none">
+        <div class="paper"><span class="tape tl"></span>
+          <p class="bi lead"><span class="en">A branch is your own copy. You can work without breaking main.</span><span class="fr">Une branche, c'est ta copie. Tu travailles sans briser main.</span></p>
+          <ol class="steps">
+            <li><b class="n">1</b><div><span class="en">Click the branch name, bottom left.</span><span class="fr">Clique sur le nom de la branche, en bas à gauche.</span></div></li>
+            <li><b class="n">2</b><div><span class="en">Choose Create new branch.</span><span class="fr">Choisis Create new branch.</span></div></li>
+            <li><b class="n">3</b><div><span class="en">Type a name, like <code>feature/navbar</code>. Press Enter.</span><span class="fr">Tape un nom, comme <code>feature/navbar</code>. Appuie sur Entrée.</span></div></li>
+          </ol>
+        </div>
+        <div class="tip"><span class="tape tr"></span>
+          <span class="en">One branch per feature. One person per branch.</span>
+          <span class="fr">Une branche par fonctionnalité. Une personne par branche.</span>
+        </div>
+      </div>
+      <div class="shot" data-mock="branch"><span class="tape tr"></span></div>
+    </div>
+  </section>
+
+  <!-- 12. COMMIT -->
+  <section class="slide" data-splat="pink:1440,-70,250:121">
+    <header class="hd"><div class="chip">09</div><div><h2 class="gt">Commit your work</h2><div class="strip">Faire un commit</div></div></header>
+    <div class="cols">
+      <div style="width:560px;flex:none">
+        <div class="paper"><span class="tape tl"></span>
+          <p class="bi lead"><span class="en">A commit is a save point with a short message.</span><span class="fr">Un commit, c'est un point de sauvegarde avec un court message.</span></p>
+          <ol class="steps">
+            <li><b class="n">1</b><div><span class="en">Open Source Control. <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>G</kbd></span><span class="fr">Ouvre le contrôle de code source.</span></div></li>
+            <li><b class="n">2</b><div><span class="en">Click + next to a file to stage it.</span><span class="fr">Clique sur + à côté d'un fichier pour l'indexer (stage).</span></div></li>
+            <li><b class="n">3</b><div><span class="en">Write a short message.</span><span class="fr">Écris un court message.</span></div></li>
+            <li><b class="n">4</b><div><span class="en">Click Commit.</span><span class="fr">Clique sur Commit.</span></div></li>
+          </ol>
+        </div>
+        <div class="tip"><span class="tape tr"></span>
+          <span class="en">Good message: "Add contact form". Bad message: "stuff".</span>
+          <span class="fr">Bon message : « Add contact form ». Mauvais message : « trucs ».</span>
+        </div>
+      </div>
+      <div class="shot" data-mock="commit"><span class="tape tr"></span></div>
+    </div>
+  </section>
+
+  <!-- 13. PUSH -->
+  <section class="slide" data-splat="yellow:-70,650,260:131">
+    <header class="hd"><div class="chip">09</div><div><h2 class="gt">Push to GitHub</h2><div class="strip">Envoyer sur GitHub (push)</div></div></header>
+    <div class="cols">
+      <div class="paper"><span class="tape tl"></span>
+        <p class="bi lead"><span class="en">Push sends your commits from your computer to GitHub.</span><span class="fr">Push envoie tes commits de ton ordinateur vers GitHub.</span></p>
+        <ol class="steps">
+          <li><b class="n">1</b><div><span class="en">After your first commit, click Publish Branch.</span><span class="fr">Après ton premier commit, clique sur Publish Branch.</span></div></li>
+          <li><b class="n">2</b><div><span class="en">After that, click Sync Changes.</span><span class="fr">Ensuite, clique sur Sync Changes.</span></div></li>
+          <li><b class="n">3</b><div><span class="en">First time only: click Allow and sign in to GitHub.</span><span class="fr">La première fois : clique sur Allow et connecte-toi à GitHub.</span></div></li>
+          <li><b class="n">4</b><div><span class="en">Refresh GitHub. Your branch is there.</span><span class="fr">Rafraîchis GitHub. Ta branche est là.</span></div></li>
+        </ol>
+      </div>
+      <div class="shot" data-mock="push"><span class="tape tr"></span></div>
+    </div>
+  </section>
+
+  <!-- 14. OPEN PR -->
+  <section class="slide" data-splat="blue:1450,640,260:141">
+    <header class="hd"><div class="chip c-blue">10</div><div><h2 class="gt">Open a pull request</h2><div class="strip">Ouvrir une pull request</div></div></header>
+    <div class="cols">
+      <div class="paper"><span class="tape tl"></span>
+        <p class="bi lead"><span class="en">A pull request (PR) asks your team to add your branch to main.</span><span class="fr">Une pull request (PR) demande à ton équipe d'ajouter ta branche à main.</span></p>
+        <ol class="steps">
+          <li><b class="n">1</b><div><span class="en">On GitHub, click Compare &amp; pull request.</span><span class="fr">Sur GitHub, clique sur Compare &amp; pull request.</span></div></li>
+          <li><b class="n">2</b><div><span class="en">Check: base is main, compare is your branch.</span><span class="fr">Vérifie : base est main, compare est ta branche.</span></div></li>
+          <li><b class="n">3</b><div><span class="en">Write a title and what you changed.</span><span class="fr">Écris un titre et ce que tu as changé.</span></div></li>
+          <li><b class="n">4</b><div><span class="en">Click Create pull request.</span><span class="fr">Clique sur Create pull request.</span></div></li>
+        </ol>
+      </div>
+      <div class="shot" data-mock="pr"><span class="tape tr"></span></div>
+    </div>
+  </section>
+
+  <!-- 15. REVIEW + MERGE -->
+  <section class="slide" data-splat="pink:-80,-50,240:151">
+    <header class="hd"><div class="chip c-blue">10</div><div><h2 class="gt">Review and merge</h2><div class="strip">Réviser et fusionner (merge)</div></div></header>
+    <div class="cols">
+      <div style="width:560px;flex:none">
+        <div class="paper"><span class="tape tl"></span>
+          <ol class="steps">
+            <li><b class="n">1</b><div><span class="en">A teammate opens Files changed and reads the code.</span><span class="fr">Un coéquipier ouvre Files changed et lit le code.</span></div></li>
+            <li><b class="n">2</b><div><span class="en">They click Review changes.</span><span class="fr">Il clique sur Review changes.</span></div></li>
+            <li><b class="n">3</b><div><span class="en">They pick Approve, then Submit review.</span><span class="fr">Il choisit Approve, puis Submit review.</span></div></li>
+            <li><b class="n">4</b><div><span class="en">Click Merge pull request, then Confirm merge.</span><span class="fr">Clique sur Merge pull request, puis Confirm merge.</span></div></li>
+          </ol>
+        </div>
+        <div class="tip"><span class="tape tr"></span>
+          <span class="en">After the merge, delete the branch. It is done.</span>
+          <span class="fr">Après la fusion, supprime la branche. C'est fini.</span>
+        </div>
+      </div>
+      <div class="shot" data-mock="merge"><span class="tape tr"></span></div>
+    </div>
+  </section>
+
+  <!-- 16. PULL -->
+  <section class="slide" data-splat="yellow:1450,-60,240:161">
+    <header class="hd"><div class="chip c-yellow">11</div><div><h2 class="gt">Pull the latest changes</h2><div class="strip">Récupérer les derniers changements</div></div></header>
+    <div class="cols">
+      <div style="width:560px;flex:none">
+        <div class="paper"><span class="tape tl"></span>
+          <p class="bi lead"><span class="en">Pull brings your team's new code to your computer.</span><span class="fr">Pull ramène le nouveau code de ton équipe sur ton ordinateur.</span></p>
+          <ol class="steps">
+            <li><b class="n">1</b><div><span class="en">Click the branch name. Switch to main.</span><span class="fr">Clique sur le nom de la branche. Passe sur main.</span></div></li>
+            <li><b class="n">2</b><div><span class="en">In Source Control, click ... then Pull.</span><span class="fr">Dans le contrôle de code source, clique sur ... puis Pull.</span></div></li>
+            <li><b class="n">3</b><div><span class="en">Or click the sync arrows at the bottom.</span><span class="fr">Ou clique sur les flèches de synchro en bas.</span></div></li>
+          </ol>
+        </div>
+        <div class="tip"><span class="tape tr"></span>
+          <span class="en">Pull before you start working. Every time.</span>
+          <span class="fr">Fais un pull avant de commencer. Chaque fois.</span>
+        </div>
+      </div>
+      <div class="shot" data-mock="pull"><span class="tape tr"></span>
+        <div class="tip" style="position:absolute;right:-24px;bottom:56px;width:360px;z-index:16;transform:rotate(-2deg)"><span class="tape tr"></span>
+          <span class="en">Same line changed by two people? That is a conflict. Ask a mentor.</span>
+          <span class="fr">Même ligne changée par deux personnes ? C'est un conflit. Demande à un mentor.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 17. STASH -->
+  <section class="slide" data-splat="blue:-70,650,260:171">
+    <header class="hd"><div class="chip c-orange">12</div><div><h2 class="gt">Stash your work</h2><div class="strip">Mettre ton travail de côté (stash)</div></div></header>
+    <div class="cols">
+      <div style="width:560px;flex:none">
+        <div class="paper"><span class="tape tl"></span>
+          <p class="bi lead"><span class="en">Stash puts unfinished work aside, so you can switch branches.</span><span class="fr">Stash met ton travail pas fini de côté, pour changer de branche.</span></p>
+          <ol class="steps">
+            <li><b class="n">1</b><div><span class="en">In Source Control, click ... then Stash.</span><span class="fr">Dans le contrôle de code source, clique sur ... puis Stash.</span></div></li>
+            <li><b class="n">2</b><div><span class="en">Choose Stash. Your changes are put aside.</span><span class="fr">Choisis Stash. Tes changements sont mis de côté.</span></div></li>
+            <li><b class="n">3</b><div><span class="en">Do your other task.</span><span class="fr">Fais ton autre tâche.</span></div></li>
+            <li><b class="n">4</b><div><span class="en">Come back. Choose Pop Latest Stash.</span><span class="fr">Reviens. Choisis Pop Latest Stash.</span></div></li>
+          </ol>
+        </div>
+        <div class="tip"><span class="tape tr"></span>
+          <span class="en">Pop brings your work back.</span>
+          <span class="fr">Pop ramène ton travail.</span>
+        </div>
+      </div>
+      <div class="shot" data-mock="stash"><span class="tape tr"></span></div>
+    </div>
+  </section>
+
+  <!-- 18. CHEAT SHEET -->
+  <section class="slide" data-splat="pink:1400,560,320:181">
+    <header class="hd"><div><h2 class="gt">Cheat sheet</h2><div class="strip">Aide-mémoire</div></div>
+      <div class="sp"></div>
+      <div class="stick" style="width:390px"><span class="tape tl"></span><span class="en">Every button in VS Code runs one of these.</span><span class="fr">Chaque bouton de VS Code lance une de ces commandes.</span></div>
+    </header>
+    <div class="paper cheat" style="margin-top:26px"><span class="tape tl"></span><span class="tape tr"></span>
+      <div class="cr"><code>git clone &lt;url&gt;</code><div><span class="en">Copy a repo to your computer.</span><span class="fr">Copier un dépôt sur ton ordinateur.</span></div></div>
+      <div class="cr"><code>git switch -c feature/navbar</code><div><span class="en">Create a branch and go to it.</span><span class="fr">Créer une branche et aller dessus.</span></div></div>
+      <div class="cr"><code>git status</code><div><span class="en">See what changed.</span><span class="fr">Voir ce qui a changé.</span></div></div>
+      <div class="cr"><code>git add .</code><div><span class="en">Stage all your changes.</span><span class="fr">Indexer tous tes changements.</span></div></div>
+      <div class="cr"><code>git commit -m "Add navbar"</code><div><span class="en">Make a save point.</span><span class="fr">Créer un point de sauvegarde.</span></div></div>
+      <div class="cr"><code>git push</code><div><span class="en">Send your commits to GitHub.</span><span class="fr">Envoyer tes commits vers GitHub.</span></div></div>
+      <div class="cr"><code>git pull</code><div><span class="en">Get the latest changes.</span><span class="fr">Récupérer les derniers changements.</span></div></div>
+      <div class="cr"><code>git stash / git stash pop</code><div><span class="en">Put work aside, then bring it back.</span><span class="fr">Mettre le travail de côté, puis le ramener.</span></div></div>
+    </div>
+  </section>
+
+  <!-- 19. LIVE DEMO -->
+  <section class="slide" data-splat="pink:180,90,300:191;blue:1120,60,300:192;yellow:560,40,240:193">
+    <div class="ttl" style="padding-top:110px">
+      <h1 class="mega" style="font-size:190px">LIVE DEMO</h1>
+      <div class="bigstrip"><span>Démo en direct</span></div>
+      <div class="flow">
+        <div class="fl"><b>Clone</b><i>Cloner</i></div><span class="fa">›</span>
+        <div class="fl"><b>Branch</b><i>Créer une branche</i></div><span class="fa">›</span>
+        <div class="fl"><b>Commit</b><i>Faire un commit</i></div><span class="fa">›</span>
+        <div class="fl"><b>Push</b><i>Envoyer</i></div><span class="fa">›</span>
+        <div class="fl"><b>PR</b><i>Ouvrir une PR</i></div><span class="fa">›</span>
+        <div class="fl"><b>Merge</b><i>Fusionner</i></div><span class="fa">›</span>
+        <div class="fl"><b>Pull</b><i>Récupérer</i></div>
+      </div>
+      <div class="go" style="margin-top:46px"><span class="tape tl"></span><span class="tape br"></span>
+        <span class="en">Open your laptop and follow along.</span>
+        <span class="fr">Ouvre ton ordi et suis avec nous.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 20. THANKS -->
+  <section class="slide" data-splat="yellow:200,120,300:201;pink:1120,110,320:202;blue:-60,600,260:203">
+    <div class="ttl" style="padding-top:90px">
+      <h1 class="mega" style="font-size:200px">THANK YOU</h1>
+      <div class="bigstrip"><span>Merci</span><span>Questions ?</span></div>
+      <div class="links">
+        <a class="lk" href="https://code.visualstudio.com/download" target="_blank" rel="noopener"><div class="u">code.visualstudio.com</div><span class="en">Get VS Code</span><span class="fr">Télécharger VS Code</span></a>
+        <a class="lk" href="https://git-scm.com/downloads" target="_blank" rel="noopener"><div class="u">git-scm.com</div><span class="en">Get Git</span><span class="fr">Télécharger Git</span></a>
+        <a class="lk" href="https://github.com/signup" target="_blank" rel="noopener"><div class="u">github.com</div><span class="en">Make your account</span><span class="fr">Créer ton compte</span></a>
+        <a class="lk" href="https://docs.github.com/en/get-started" target="_blank" rel="noopener"><div class="u">docs.github.com</div><span class="en">Learn more</span><span class="fr">En apprendre plus</span></a>
+        <a class="lk" href="https://www.hackdecouverte.io/" target="_blank" rel="noopener"><div class="u">hackdecouverte.io</div><span class="en">Event info</span><span class="fr">Infos sur l'événement</span></a>
+      </div>
+      <div class="go"><span class="tape tl"></span><span class="tape br"></span>
+        <span class="en">Stuck? Mentors are here all day. Happy hacking.</span>
+        <span class="fr">Bloqué ? Les mentors sont là toute la journée. Bon hackathon.</span>
+      </div>
+    </div>
+  </section>
+
+    <div id="ui">
+    <button id="prev" aria-label="Previous slide">‹</button>
+    <div class="ct" id="ct">1 / 20</div>
+    <button id="next" aria-label="Next slide">›</button>
+    <button id="fs" aria-label="Full screen" title="Full screen (F)">⛶</button>
+  </div>
+  <div id="bar"></div>
+</div>
+
+<script>
+/* ---------- helpers ---------- */
+function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const COLORS={pink:'#ec6ac1',yellow:'#f6dd6e',blue:'#3e9cbf',orange:'#f08a3c'};
+
+/* brick wall */
+(function(){
+  const r=rng(11), bw=128, bh=46, m=6;
+  const cols=['#7a4232','#6c3829','#84503d','#5f3123','#744536','#8b5a45','#693a2c','#7f4a36'];
+  let s=`<svg xmlns='http://www.w3.org/2000/svg' width='1600' height='900'><defs><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0'/></filter></defs><rect width='1600' height='900' fill='#9a8576'/>`;
+  for(let row=0; row*(bh+m)<900; row++){
+    const y=row*(bh+m)+m/2, off=row%2?-(bw+m)/2:0;
+    for(let x=off; x<1600; x+=bw+m){
+      const c=cols[Math.floor(r()*cols.length)];
+      s+=`<rect x='${x}' y='${y}' width='${bw}' height='${bh}' fill='${c}'/>`;
+      if(r()<.35) s+=`<rect x='${x+8+r()*60}' y='${y+8+r()*16}' width='${20+r()*30}' height='${6+r()*8}' fill='#fff' opacity='.05'/>`;
+      s+=`<rect x='${x}' y='${y+bh-5}' width='${bw}' height='5' fill='#000' opacity='.12'/>`;
+    }
+  }
+  s+=`<rect width='1600' height='900' filter='url(#n)' opacity='.4'/></svg>`;
+  document.getElementById('wall').style.background=`url("data:image/svg+xml,${encodeURIComponent(s)}")`;
+})();
+
+/* paint splats */
+function splat(color,seed){
+  const r=rng(seed), n=18, pts=[];
+  for(let i=0;i<n;i++){const a=i/n*Math.PI*2; let rad=22+r()*10; if(r()<.25) rad+=6+r()*8; pts.push([50+Math.cos(a)*rad,50+Math.sin(a)*rad]);}
+  const mid=(a,b)=>[(a[0]+b[0])/2,(a[1]+b[1])/2];
+  let p=mid(pts[0],pts[1]), d=`M${p[0].toFixed(1)},${p[1].toFixed(1)}`;
+  for(let i=1;i<=n;i++){const c=pts[i%n], e=mid(c,pts[(i+1)%n]); d+=` Q${c[0].toFixed(1)},${c[1].toFixed(1)} ${e[0].toFixed(1)},${e[1].toFixed(1)}`;}
+  let extra='';
+  for(let i=0;i<4;i++){const a=r()*Math.PI*2, r1=26, r2=40+r()*12, w=2+r()*3;
+    extra+=`<line x1='${50+Math.cos(a)*r1}' y1='${50+Math.sin(a)*r1}' x2='${50+Math.cos(a)*r2}' y2='${50+Math.sin(a)*r2}' stroke='${color}' stroke-width='${w}' stroke-linecap='round'/><circle cx='${50+Math.cos(a)*r2}' cy='${50+Math.sin(a)*r2}' r='${w*.9}' fill='${color}'/>`;}
+  for(let i=0;i<14;i++){const a=r()*Math.PI*2, dd=38+r()*16; extra+=`<circle cx='${50+Math.cos(a)*dd}' cy='${50+Math.sin(a)*dd}' r='${.6+r()*2.6}' fill='${color}'/>`;}
+  return `<svg viewBox='-6 -6 112 112'><path d='${d} Z' fill='${color}'/>${extra}</svg>`;
+}
+document.querySelectorAll('.slide[data-splat]').forEach(sl=>{
+  sl.dataset.splat.split(';').forEach(spec=>{
+    const [c,rest]=spec.split(':'); const [x,y,w,seed]=rest.split(/[,:]/).map(Number);
+    const el=document.createElement('div'); el.className='splat';
+    el.style.cssText=`left:${x}px;top:${y}px;width:${w}px;height:${w}px;opacity:.92`;
+    el.innerHTML=splat(COLORS[c],seed||7); sl.prepend(el);
+  });
+});
+
+/* icons */
+const I={
+ files:`<svg viewBox="0 0 24 24"><path d="M13 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V9z"/><path d="M13 3v6h6"/></svg>`,
+ search:`<svg viewBox="0 0 24 24"><circle cx="14" cy="10" r="6"/><path d="M9.6 14.4 4 20"/></svg>`,
+ scm:`<svg viewBox="0 0 24 24"><circle cx="7" cy="5" r="2"/><circle cx="7" cy="19" r="2"/><circle cx="17" cy="8" r="2"/><path d="M7 7v10M17 10c0 4-4 4-9 7"/></svg>`,
+ run:`<svg viewBox="0 0 24 24"><path d="M7 4l12 8-12 8z"/></svg>`,
+ ext:`<svg viewBox="0 0 24 24"><rect x="4" y="9" width="5" height="5"/><rect x="9" y="9" width="5" height="5"/><rect x="4" y="14" width="5" height="5"/><rect x="9" y="14" width="5" height="5"/><rect x="15" y="3.5" width="5" height="5"/></svg>`,
+ sync:`<svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 14-5.3M20 12a8 8 0 0 1-14 5.3"/><path d="M18 3v4h-4M6 21v-4h4"/></svg>`,
+ cloud:`<svg viewBox="0 0 24 24"><path d="M7 19h10a4 4 0 0 0 .6-8A6 6 0 0 0 6 10.4 4.3 4.3 0 0 0 7 19z"/><path d="M12 17v-5M9.5 14.5 12 12l2.5 2.5"/></svg>`,
+ check:`<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>`,
+ dots:`<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>`,
+ copy:`<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#59636e" stroke-width="1.6"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg>`,
+ plus:`<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>`,
+ undo:`<svg viewBox="0 0 24 24"><path d="M9 7 4 12l5 5"/><path d="M4 12h10a6 6 0 0 1 0 12"/></svg>`,
+ laptop:`<svg viewBox="0 0 64 64"><rect x="12" y="14" width="40" height="27" rx="2"/><path d="M6 47h52l-4 5H10z"/><path d="M22 24l-4 4 4 4M42 24l4 4-4 4M34 22l-4 12"/></svg>`,
+ cloudBig:`<svg viewBox="0 0 64 64"><path d="M18 48h30a11 11 0 0 0 1.5-21.9A15 15 0 0 0 20.6 22 12 12 0 0 0 18 48z"/><path d="M26 36l6-6 6 6M32 30v12"/></svg>`,
+ team:`<svg viewBox="0 0 64 64"><circle cx="22" cy="22" r="7"/><circle cx="42" cy="22" r="7"/><path d="M8 48c0-8 6-13 14-13s14 5 14 13M28 48c0-8 6-13 14-13s14 5 14 13"/></svg>`
+};
+const br=`<svg viewBox="0 0 24 24"><circle cx="7" cy="5" r="2"/><circle cx="7" cy="19" r="2"/><circle cx="17" cy="8" r="2"/><path d="M7 7v10M17 10c0 4-4 4-9 7"/></svg>`;
+const R=(n,pad)=>` data-ring="${n}"${pad!=null?` data-pad="${pad}"`:''}`;
+
+/* code sample */
+const CODE=[
+ `<span class="k5">&lt;!DOCTYPE html&gt;</span>`,
+ `<span class="k5">&lt;</span><span class="k1">html</span> <span class="k2">lang</span><span class="k4">=</span><span class="k3">"fr"</span><span class="k5">&gt;</span>`,
+ `  <span class="k5">&lt;</span><span class="k1">head</span><span class="k5">&gt;</span>`,
+ `    <span class="k5">&lt;</span><span class="k1">title</span><span class="k5">&gt;</span><span class="k4">Notre projet</span><span class="k5">&lt;/</span><span class="k1">title</span><span class="k5">&gt;</span>`,
+ `  <span class="k5">&lt;/</span><span class="k1">head</span><span class="k5">&gt;</span>`,
+ `  <span class="k5">&lt;</span><span class="k1">body</span><span class="k5">&gt;</span>`,
+ `    <span class="k5">&lt;</span><span class="k1">h1</span><span class="k5">&gt;</span><span class="k4">Bonjour HackDécouverte</span><span class="k5">&lt;/</span><span class="k1">h1</span><span class="k5">&gt;</span>`,
+ `    <span class="k5">&lt;</span><span class="k1">nav</span> <span class="k2">class</span><span class="k4">=</span><span class="k3">"navbar"</span><span class="k5">&gt;&lt;/</span><span class="k1">nav</span><span class="k5">&gt;</span>`,
+ `  <span class="k5">&lt;/</span><span class="k1">body</span><span class="k5">&gt;</span>`,
+ `<span class="k5">&lt;/</span><span class="k1">html</span><span class="k5">&gt;</span>`
+];
+const code=(add)=>CODE.map((l,i)=>`<div class="ln${add&&add.includes(i)?' add':''}"><u>${i+1}</u>${l}</div>`).join('');
+
+function explorer(ring){return `<div class="sbh">EXPLORER<span class="sp"></span><span class="ic dots">${I.dots}</span></div>
+<div${ring||''}><div class="sec">⌄ HACK-PROJECT</div>
+<div class="fi on"><b class="fh">&lt;&gt;</b>index.html</div>
+<div class="fi"><b class="fc">#</b>style.css</div>
+<div class="fi"><b class="fj">JS</b>app.js</div>
+<div class="fi"><b class="fm">ⓘ</b>README.md</div></div>`}
+
+function scmSide(o){return `<div class="sbh">SOURCE CONTROL<span class="sp"></span><span class="ic">${I.check}</span><span class="ic">${I.sync}</span><span class="ic dots"${o.dotsRing||''}>${I.dots}</span></div>
+<div class="cmt"><div class="in${o.msg?'':' ph'}"${o.msgRing||''}>${o.msg||'Message (Ctrl+Enter to commit)'}</div>
+<div class="vbtn"${o.btnRing||''}>${o.btn||I.check+' Commit'}</div></div>
+${o.files?`<div class="chg"><div class="sec">⌄ Changes <span style="background:#4d4d4d;border-radius:8px;padding:0 6px;margin-left:4px">${o.files.length}</span></div>${o.files.map(f=>`<div class="fi"><b class="${f[1]}">${f[2]}</b>${f[0]}<span class="sp"></span>${f[4]?`<span class="ic">${I.undo}</span><span class="ic"${f[4]}>${I.plus}</span>`:''}<span class="st ${f[3]=='M'?'st-m':'st-u'}">${f[3]}</span></div>`).join('')}</div>`:''}`}
+
+function vsc(o){
+  const act=o.active||'files';
+  const ab=['files','search','scm','run','ext'].map(k=>`<div class="abi${k==act?' on':''}"${k=='scm'&&o.scmRing?o.scmRing:''}>${I[k]}${k=='scm'&&o.badge?`<span class="bdg">${o.badge}</span>`:''}</div>`).join('');
+  return `<div class="vsc">
+  <div class="tb"><i class="d r"></i><i class="d y"></i><i class="d g"></i><span class="tt">index.html - hack-project - Visual Studio Code</span></div>
+  <div class="mn"><div class="ab">${ab}</div>
+   <div class="sb">${o.sb||explorer(o.sbRing)}</div>
+   <div class="ed"><div class="tabs"><div class="tab on"><b class="fh" style="font-size:10px">&lt;&gt;</b>index.html<i>×</i></div><div class="tab">style.css</div></div>
+    <div class="code"${o.codeRing||''}>${code(o.add)}</div>
+    ${o.panel?`<div class="pnl" style="height:${o.ph||150}px"${o.panelRing||''}><div class="pt"><span>PROBLEMS</span><span>OUTPUT</span><span class="on">TERMINAL</span></div><div class="term">${o.panel}</div></div>`:''}
+   </div></div>
+  <div class="stb"><span${o.branchRing||''}>${br}${o.branch||'main'}</span><span${o.syncRing||''}>${o.sync||I.sync+' 0↓ 0↑'}</span><span class="sp"></span><span>Ln 7, Col 12</span><span>UTF-8</span><span>HTML</span></div>
+  ${o.ov||''}
+  </div>`;
+}
+function browser(url,tab,inner){
+  return `<div class="brw"><div class="bt"><i class="d r"></i><i class="d y"></i><i class="d g"></i><div class="btab">${tab}</div></div>
+  <div class="ba"><span class="nv">‹›↻</span><div class="url">${url}</div></div><div class="bc">${inner}</div></div>`;
+}
+function ghHead(path,plusRing){return `<div class="ghh"><span class="hb">☰</span><span class="ghp">${path}</span><span class="sp"></span><span class="srch">Type / to search</span><span class="hb" style="width:46px"${plusRing||''}>+ ▾</span><span class="av"></span></div>`}
+
+/* ---------- mocks ---------- */
+const MOCKS={
+what:()=>vsc({sbRing:R(1,-4),codeRing:R(2,-8),scmRing:R(4,-2),ph:150,panelRing:R(3,-6),
+  panel:`<span class="pr">hack-project $</span> git status
+On branch main
+nothing to commit, working tree clean
+<span class="pr">hack-project $</span> <span class="cur"></span>`}),
+
+install:()=>browser('code.visualstudio.com/download','Download Visual Studio Code',`
+ <div style="padding:34px 40px;text-align:center">
+  <div style="font-size:30px;font-weight:600">Download Visual Studio Code</div>
+  <div class="muted" style="font-size:15px;margin-top:8px">Free and built on open source. Integrated Git, debugging and extensions.</div>
+  <div style="display:flex;gap:26px;justify-content:center;margin-top:40px"${R(2,10)}>
+   ${[['Windows','Windows 10, 11','User Installer x64 | Arm64'],['Linux','.deb  |  .rpm','Debian, Ubuntu, Red Hat'],['Mac','macOS 11+','Universal | Intel | Apple silicon']].map(c=>`
+   <div style="width:220px;border:1px solid #e3e3e3;border-radius:10px;padding:22px 14px">
+     <div style="font-size:24px;font-weight:600;margin-bottom:16px">${c[0]}</div>
+     <div style="background:#0066b8;color:#fff;border-radius:4px;padding:12px;font-weight:600;font-size:15px">↓ ${c[1]}</div>
+     <div class="muted" style="margin-top:12px;font-size:12px">${c[2]}</div>
+   </div>`).join('')}
+  </div>
+ </div>`),
+
+git:()=>vsc({ph:300,
+  panel:`<span class="pr">hack-project $</span> git --version
+<span data-ring="4" data-pad="2">git version 2.47.1</span>
+<span data-ring="5" data-pad="2"><span class="pr">hack-project $</span> git config --global user.name "Alex Tremblay"
+<span class="pr">hack-project $</span> git config --global user.email "alex@email.com"</span>
+<span class="pr">hack-project $</span> <span class="cur"></span>`}),
+
+diagram:()=>`<div class="diag">
+  <svg class="arr" viewBox="0 0 860 520">
+   <defs><marker id="ah" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#fff"/></marker></defs>
+   <path d="M190 330 C 190 200, 260 130, 318 120" stroke="#ffffff" marker-end="url(#ah)"/>
+   <path d="M545 120 C 610 130, 670 200, 670 318" stroke="#ffffff" marker-end="url(#ah)"/>
+  </svg>
+  <div class="node" style="left:320px;top:20px;width:224px;border-color:var(--orange)">${I.cloudBig}<b>GitHub</b><span class="en">Online</span><span class="fr">En ligne</span></div>
+  <div class="node" style="left:70px;top:330px;width:240px;border-color:var(--pink);transform:rotate(-2deg)">${I.laptop}<b>You</b><span class="en">Git on your computer</span><span class="fr">Git sur ton ordi</span></div>
+  <div class="node" style="left:550px;top:330px;width:240px;transform:rotate(1.5deg)">${I.team}<b>Your team</b><span class="en">Same project</span><span class="fr">Même projet</span></div>
+  <div class="alab" style="left:130px;top:170px;transform:rotate(-4deg)">push</div>
+  <div class="alab" style="left:660px;top:170px;transform:rotate(4deg)">pull</div>
+ </div>`,
+
+signup:()=>browser('github.com/signup','Sign up for GitHub',`
+ <div style="display:flex;height:100%">
+  <div style="width:300px;background:linear-gradient(160deg,#1d2a5c,#0d1117 70%);color:#fff;padding:40px 30px">
+    <div style="font-size:26px;font-weight:700;line-height:1.2">Create your free account</div>
+    <div style="margin-top:14px;color:#c9d1d9;font-size:14px;line-height:1.5">Explore the features for individuals and teams.</div>
+  </div>
+  <div style="flex:1;padding:36px 60px">
+    <div style="font-size:22px;font-weight:600;margin-bottom:20px">Sign up for GitHub</div>
+    <div${R(2,10)}>
+     <span class="lbl">Email</span><div class="gin" style="margin-bottom:14px">alex@email.com</div>
+     <span class="lbl">Password</span><div class="gin" style="margin-bottom:14px">••••••••••••</div>
+     <span class="lbl">Username</span><div class="gin">alex-codes</div>
+    </div>
+    <div style="margin-top:22px;background:#24292f;color:#fff;border-radius:6px;padding:10px;text-align:center;font-weight:600"${R(3,6)}>Create account</div>
+  </div>
+ </div>`),
+
+repo:()=>browser('github.com/new','New repository',`
+ ${ghHead('New repository',R(1,4))}
+ <div class="pg" style="padding-top:16px">
+  <h3>Create a new repository</h3>
+  <div class="muted">A repository contains all project files, including the revision history.</div>
+  <div class="hr"></div>
+  <div style="display:flex;gap:14px;align-items:flex-end">
+    <div><span class="lbl">Owner</span><div class="gin">alex-codes ▾</div></div><div style="font-size:22px;padding-bottom:4px">/</div>
+    <div${R(2,6)}><span class="lbl">Repository name</span><div class="gin" style="width:260px">hack-project</div></div>
+  </div>
+  <div class="hr"></div>
+  <div style="display:flex;gap:40px">
+   <div${R(3,6)}>
+    <div class="rad"><i class="on"></i><div><b>Public</b><div class="muted">Anyone can see this repository.</div></div></div>
+    <div class="rad"><i></i><div><b>Private</b><div class="muted">You choose who can see it.</div></div></div>
+   </div>
+   <div style="align-self:center"${R(4,8)}><b>Add README</b> &nbsp; <span class="tog"></span></div>
+  </div>
+  <div class="hr"></div>
+  <div style="text-align:right"><span class="gb"${R(5,5)}>Create repository</span></div>
+ </div>`),
+
+invite:()=>browser('github.com/alex-codes/hack-project/settings/access','Collaborators',`
+ ${ghHead('alex-codes <b>/</b> hack-project')}
+ <div class="ghtabs"><span>&lt;&gt; Code</span><span>Issues</span><span>Pull requests</span><span>Actions</span><span class="on"${R(1,2)}>⚙ Settings</span></div>
+ <div style="display:flex;padding:20px 26px;gap:26px">
+  <div style="width:180px;font-size:14px;line-height:2.1">
+   <div>General</div>
+   <div style="background:#eef1f4;border-radius:6px;padding:0 10px;margin:0 -10px;font-weight:600;border-left:3px solid #fd8c73"${R(2,4)}>Collaborators</div>
+   <div>Branches</div><div>Rules</div><div>Webhooks</div><div>Pages</div>
+  </div>
+  <div style="flex:1">
+   <div style="font-size:20px;font-weight:600;margin-bottom:14px">Collaborators and teams</div>
+   <div style="border:1px solid #d1d9e0;border-radius:6px">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:#f6f8fa;border-bottom:1px solid #d1d9e0">
+      <b>Manage access</b><span class="gb"${R(3,5)}>Add people</span></div>
+    <div style="padding:16px;display:flex;gap:12px;align-items:center"><span class="av"></span><div><b>sam-dev</b><div class="muted">Pending invite</div></div></div>
+    <div style="padding:0 16px 16px;display:flex;gap:12px;align-items:center"><span class="av" style="background:linear-gradient(135deg,#3e9cbf,#f6dd6e)"></span><div><b>maya-builds</b><div class="muted">Collaborator</div></div></div>
+   </div>
+  </div>
+ </div>`),
+
+clone:()=>vsc({ov:`<div class="qp"${R(3,6)}>
+   <div class="qi">https://github.com/alex-codes/hack-project.git</div>
+   <div class="qh">Provide repository URL or pick a repository source.</div>
+   <div class="qo hl">Clone from URL <small>https://github.com/alex-codes/hack-project.git</small></div>
+   <div class="qo">Clone from GitHub</div>
+  </div>`})+`
+  <div class="float" style="left:-30px;top:290px;width:470px">
+   <div style="font-family:-apple-system,Segoe UI,sans-serif;font-size:14px;color:#1f2328">
+    <div style="margin-bottom:10px"><span class="gb">&lt;&gt; Code ▾</span></div>
+    <div style="border:1px solid #d1d9e0;border-radius:8px;padding:12px">
+     <div style="font-weight:600;margin-bottom:8px">Clone <span class="muted" style="font-weight:400;margin-left:8px">HTTPS</span></div>
+     <div style="display:flex;gap:8px;align-items:center"${R(1,5)}><div class="gin" style="flex:1;font-size:12px;font-family:var(--m);white-space:nowrap">https://github.com/alex-codes/hack-project.git</div><span class="hb">${I.copy}</span></div>
+    </div>
+   </div>
+   <div class="cap">On GitHub / Sur GitHub</div>
+  </div>`,
+
+branch:()=>vsc({branchRing:R(1,2),ov:`<div class="qp">
+   <div class="qi" style="color:#8b8b8b">Select a branch or tag to checkout</div>
+   <div class="qo hl" style="margin-top:6px"${R(2,3)}>+ Create new branch...</div>
+   <div class="qo">+ Create new branch from...</div>
+   <div class="qo">⇄ Checkout detached...</div>
+   <div class="qs">branches</div>
+   <div class="qo">${'⎇'} main <small>Last commit 2 min ago</small></div>
+   <div class="qs">remote branches</div>
+   <div class="qo">☁ origin/main</div>
+  </div>`})+`
+  <div class="float" style="right:-30px;top:330px;width:440px;background:#252526;transform:rotate(2deg)"${R(3,4)}>
+   <div style="font-family:Segoe UI,system-ui,sans-serif;font-size:13px;color:#ccc">
+    <div class="qi" style="background:#3c3c3c;border:1px solid #0078d4;border-radius:3px;padding:6px 8px;color:#fff">feature/navbar</div>
+    <div style="padding:8px 4px 2px;color:#9d9d9d">Please provide a new branch name (Press 'Enter' to confirm or 'Escape' to cancel)</div>
+   </div>
+  </div>`,
+
+commit:()=>vsc({active:'scm',badge:'2',scmRing:R(1,-2),branch:'feature/navbar',add:[7],
+  sb:scmSide({msg:'Add navbar',msgRing:R(3,3),btnRing:R(4,3),files:[['index.html','fh','&lt;&gt;','M',R(2,3)],['style.css','fc','#','M']]})}),
+
+push:()=>vsc({active:'scm',branch:'feature/navbar',sync:I.cloud,syncRing:R('',2),
+  sb:scmSide({btn:I.cloud+' Publish Branch',btnRing:R(1,3)}),
+  ov:`<div class="dlg"${R(3,4)}>The extension 'GitHub' wants to sign in using GitHub.<div class="row"><span class="bt2">Cancel</span><span class="bt1">Allow</span></div></div>`})+`
+  <div class="float" style="right:-28px;top:360px;width:280px;background:#252526;transform:rotate(-2deg)">
+    <div class="vbtn" style="font-family:Segoe UI,system-ui,sans-serif;margin:0"${R(2,4)}>${I.sync} Sync Changes 1↑</div>
+    <div class="cap" style="color:#fff">After that / Ensuite</div>
+  </div>`,
+
+pr:()=>browser('github.com/alex-codes/hack-project','alex-codes/hack-project',`
+ ${ghHead('alex-codes <b>/</b> hack-project')}
+ <div style="padding:14px 26px">
+  <div class="ban"><span><b>feature/navbar</b> had recent pushes 1 minute ago</span><span class="gb"${R(1,4)}>Compare &amp; pull request</span></div>
+  <div style="font-size:20px;font-weight:600;margin:16px 0 10px">Open a pull request</div>
+  <div style="border:1px solid #d1d9e0;border-radius:6px;padding:8px 12px;background:#f6f8fa;display:flex;gap:10px;align-items:center;margin-bottom:12px"${R(2,3)}>
+    <span class="gb gray" style="padding:3px 10px">base: main ▾</span>←<span class="gb gray" style="padding:3px 10px">compare: feature/navbar ▾</span>
+    <span style="color:#1a7f37;font-weight:600;font-size:13px">✓ Able to merge.</span>
+  </div>
+  <div${R(3,5)}>
+   <span class="lbl">Add a title</span><div class="gin" style="margin-bottom:10px">Add navbar</div>
+   <span class="lbl">Add a description</span><div class="gin" style="height:56px">I added a navbar with 3 links.</div>
+  </div>
+  <div style="text-align:right;margin-top:12px"><span class="gb"${R(4,4)}>Create pull request</span></div>
+ </div>`),
+
+merge:()=>browser('github.com/alex-codes/hack-project/pull/3','Add navbar #3',`
+ ${ghHead('alex-codes <b>/</b> hack-project')}
+ <div style="padding:14px 26px 0">
+  <div style="display:flex;align-items:center;gap:10px"><span style="font-size:22px;font-weight:400">Add navbar <span class="muted" style="font-size:22px">#3</span></span><span class="sp" style="flex:1"></span><span class="gb"${R(2,4)}>Review changes ▾</span></div>
+  <div style="margin-top:8px"><span style="background:#1f883d;color:#fff;border-radius:16px;padding:4px 12px;font-weight:600;font-size:13px">Open</span> <span class="muted">alex-codes wants to merge 1 commit into main from feature/navbar</span></div>
+ </div>
+ <div class="ghtabs" style="background:#fff;margin-top:10px"><span class="on">Conversation</span><span>Commits<span class="cnt">1</span></span><span${R(1,2)}>Files changed<span class="cnt">2</span></span></div>
+ <div class="ddp" style="right:26px;top:96px;width:300px;padding:14px"${R(3,4)}>
+   <b>Finish your review</b>
+   <div class="gin" style="height:44px;margin:8px 0 10px;color:#59636e">Looks good!</div>
+   <div class="rad"><i></i>Comment</div>
+   <div class="rad"><i class="on"></i><b>Approve</b></div>
+   <div class="rad"><i></i>Request changes</div>
+   <div style="text-align:right"><span class="gb" style="padding:4px 12px">Submit review</span></div>
+ </div>
+ <div style="padding:16px 26px;width:500px">
+  <div class="mbox"><span class="okc">✓</span><div><b>No conflicts with base branch</b><div class="muted">Merging can be performed automatically.</div></div></div>
+  <div style="margin-top:12px"><span class="gb"${R(4,4)}>Merge pull request ▾</span></div>
+ </div>`),
+
+pull:()=>vsc({active:'scm',branchRing:R(1,2),sync:I.sync+' 2↓ 0↑',syncRing:R(3,2),
+  sb:scmSide({dotsRing:R(2,2)}),
+  ov:`<div class="mnu" style="left:262px;top:64px">
+   <div class="mi">View &amp; Sort<span class="ar">›</span></div><div class="msep"></div>
+   <div class="mi hl">Pull</div><div class="mi">Push</div><div class="mi">Clone</div><div class="mi">Checkout to...</div><div class="mi">Fetch</div><div class="msep"></div>
+   <div class="mi">Commit<span class="ar">›</span></div><div class="mi">Changes<span class="ar">›</span></div><div class="mi">Pull, Push<span class="ar">›</span></div><div class="mi">Branch<span class="ar">›</span></div><div class="mi">Remote<span class="ar">›</span></div><div class="mi">Stash<span class="ar">›</span></div><div class="mi">Tags<span class="ar">›</span></div>
+  </div>`}),
+
+stash:()=>vsc({active:'scm',badge:'1',branch:'feature/navbar',
+  sb:scmSide({dotsRing:R(1,2),files:[['app.js','fj','JS','M']]}),
+  ov:`<div class="mnu" style="left:262px;top:64px">
+   <div class="mi">Pull</div><div class="mi">Push</div><div class="mi">Clone</div><div class="mi">Checkout to...</div><div class="mi">Fetch</div><div class="msep"></div>
+   <div class="mi">Commit<span class="ar">›</span></div><div class="mi">Changes<span class="ar">›</span></div><div class="mi">Branch<span class="ar">›</span></div><div class="mi">Remote<span class="ar">›</span></div><div class="mi hl">Stash<span class="ar">›</span></div><div class="mi">Tags<span class="ar">›</span></div>
+  </div>
+  <div class="mnu" style="left:468px;top:205px;width:230px">
+   <div class="mi"${R(2,1)}>Stash</div><div class="mi">Stash (Include Untracked)</div><div class="mi">Stash Staged</div><div class="msep"></div>
+   <div class="mi">Apply Latest Stash</div><div class="mi">Apply Stash...</div><div class="msep"></div>
+   <div class="mi hl"${R(4,1)}>Pop Latest Stash</div><div class="mi">Pop Stash...</div><div class="msep"></div>
+   <div class="mi">Drop Stash...</div><div class="mi">View Stash...</div>
+  </div>`})
+};
+document.querySelectorAll('.shot[data-mock]').forEach(el=>{el.insertAdjacentHTML('beforeend',MOCKS[el.dataset.mock]())});
+
+/* rings: placed from each target's layout box */
+function ringPath(w,h,o){const cx=w/2+o,cy=h/2+o;let d='';for(let a=195;a<=560;a+=6){const t=a*Math.PI/180;const k=1+0.035*Math.sin(t*3)+(a>480?(a-480)/80*0.07:0);const x=cx+Math.cos(t)*(w/2)*k,y=cy+Math.sin(t)*(h/2)*k;d+=(d?'L':'M')+x.toFixed(1)+','+y.toFixed(1);}return d}
+function offs(el,root){let x=0,y=0;while(el&&el!==root){x+=el.offsetLeft;y+=el.offsetTop;el=el.offsetParent;}return[x,y]}
+function placeRings(){
+  document.querySelectorAll('.shot').forEach(shot=>{
+    shot.querySelectorAll(':scope > .ring').forEach(r=>r.remove());
+    let i=0;
+    [...shot.querySelectorAll('[data-ring]')].sort((a,b)=>(+a.dataset.ring||99)-(+b.dataset.ring||99)).forEach(t=>{
+      const pad=+(t.dataset.pad||6); const [x,y]=offs(t,shot);
+      const w=t.offsetWidth, h=t.offsetHeight;
+      const r=document.createElement('div'); r.className='ring'; r.style.setProperty('--i',i++);
+      r.style.cssText+=`left:${x-pad}px;top:${y-pad}px;width:${w+pad*2}px;height:${h+pad*2}px`;
+      const W=w+pad*2+12,H=h+pad*2+12;
+      r.innerHTML=`<svg viewBox="0 0 ${W} ${H}"><path pathLength="100" d="${ringPath(W-8,H-8,4)}"/></svg>${t.dataset.ring?`<b class="rn">${t.dataset.ring}</b>`:''}`;
+      shot.appendChild(r);
+    });
+  });
+}
+
+/* ---------- deck ---------- */
+const stage=document.getElementById('stage');
+const slides=[...document.querySelectorAll('.slide')];
+const ct=document.getElementById('ct'), bar=document.getElementById('bar');
+let cur=0;
+function fit(){const s=Math.min(innerWidth/1600,innerHeight/900);stage.style.transform=`translate(-50%,-50%) scale(${s})`}
+function show(i){
+  cur=Math.max(0,Math.min(slides.length-1,i));
+  slides.forEach((s,k)=>{s.classList.toggle('on',k===cur);s.setAttribute('aria-hidden',k!==cur)});
+  ct.textContent=`${cur+1} / ${slides.length}`;
+  bar.style.width=`${(cur+1)/slides.length*100}%`;
+  try{history.replaceState(null,'','#'+(cur+1))}catch(e){/* blocked in sandboxed previews */}
+}
+document.getElementById('prev').onclick=()=>show(cur-1);
+document.getElementById('next').onclick=()=>show(cur+1);
+function fullscreen(){try{const p=!document.fullscreenElement?document.documentElement.requestFullscreen?.():document.exitFullscreen?.();p&&p.catch&&p.catch(()=>{})}catch(e){}}
+document.getElementById('fs').onclick=fullscreen;
+addEventListener('keydown',e=>{
+  if(['ArrowRight','ArrowDown','PageDown',' ','Enter'].includes(e.key)){e.preventDefault();show(cur+1)}
+  else if(['ArrowLeft','ArrowUp','PageUp','Backspace'].includes(e.key)){e.preventDefault();show(cur-1)}
+  else if(e.key==='Home')show(0);
+  else if(e.key==='End')show(slides.length-1);
+  else if(e.key==='f'||e.key==='F')fullscreen();
+});
+let tx=null;
+addEventListener('touchstart',e=>tx=e.touches[0].clientX,{passive:true});
+addEventListener('touchend',e=>{if(tx==null)return;const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>50)show(cur+(dx<0?1:-1));tx=null});
+addEventListener('resize',fit);
+fit(); placeRings();
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(placeRings);
+let start=1;try{start=parseInt(location.hash.slice(1))||1}catch(e){}
+show(start-1);
+</script>
+</body>
+</html>
